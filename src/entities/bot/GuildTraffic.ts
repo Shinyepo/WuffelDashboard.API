@@ -1,0 +1,26 @@
+import { Entity, PrimaryKey, Property } from "@mikro-orm/core";
+import { Field, ObjectType } from "type-graphql";
+
+@ObjectType()
+@Entity({ tableName: "bot.guildtraffic" })
+export class GuildTraffic {
+  @Field()
+  @PrimaryKey()
+  id: number;
+
+  @Field()
+  @Property()
+  guildId: string;
+
+  @Field()
+  @Property()
+  userId: string;
+
+  @Field()
+  @Property()
+  joined: boolean;
+
+  @Field(() => String)
+  @Property({ type: "date", onCreate: () => new Date() })
+  createdAt: string;
+}
