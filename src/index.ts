@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import "dotenv-safe/config"
+import "dotenv-safe/config";
 import { MikroORM, wrap } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import mikroOrmConfig from "./mikro-orm.config";
@@ -10,7 +10,12 @@ import { UsersResolver } from "./resolvers/Users";
 import Redis from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
-import { DiscordGuilds, DiscordTokenResponse, DiscordUser, MyContext } from "./types";
+import {
+  DiscordGuilds,
+  DiscordTokenResponse,
+  DiscordUser,
+  MyContext,
+} from "./types";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import cors from "cors";
 import axios from "axios";
@@ -26,7 +31,7 @@ const main = async () => {
   await orm.getMigrator().up();
 
   const app = express();
-  app.set("proxy", 1);
+  app.set("trust proxy", 1);
   app.use(
     cors({
       credentials: true,
@@ -37,8 +42,6 @@ const main = async () => {
   const RedisStore = connectRedis(session);
   const redisClient = Redis.createClient({
     url: process.env.REDIS_URL,
-    password:
-      "b6a4b17ce0036e061e90386864c4d21ac98992ce6a3813c0fd320322851296ed",
   });
 
   app.use(
@@ -51,9 +54,9 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 24 * 365 * 10,
         httpOnly: true,
-        secure: __prod__, // https
+        secure: false, // https
         sameSite: "lax",
-        domain: __prod__ ? ".178.43.12.39" : undefined,
+        // domain: __prod__ ? "178.43.12.39" : undefined,
       },
       saveUninitialized: false,
       secret: process.env.SECRET,
@@ -74,7 +77,8 @@ const main = async () => {
   apolloServer.applyMiddleware({ app, cors: false });
 
   app.get("/discord/auth/callback", async (req, res) => {
-    if (req.session.user) return res.redirect(process.env.CORS_ORIGIN + "/dashboard");
+    if (req.session.user)
+      return res.redirect(process.env.CORS_ORIGIN + "/dashboard");
     const code = req.query.code;
     if (!code) return res.redirect(process.env.CORS_ORIGIN);
     const oauthResult = await axios({
@@ -85,7 +89,7 @@ const main = async () => {
         client_secret: config.clientSecret,
         code: code!.toString(),
         grant_type: "authorization_code",
-        redirect_uri: `http://localhost:4000/discord/auth/callback`,
+        redirect_uri: `http://192.168.1.14:4000/discord/auth/callback`,
         scope: "identify",
       }),
       headers: {
@@ -113,13 +117,15 @@ const main = async () => {
     });
     if (guilds.status !== 200) return res.redirect(process.env.CORS_ORIGIN);
     const userGuilds = guilds.data as DiscordGuilds[];
-    const filteredGuilds = userGuilds.filter((guild) => ((parseInt(guild.permissions, 10) & 0x8) === 0x8));
+    const filteredGuilds = userGuilds.filter(
+      (guild) => (parseInt(guild.permissions, 10) & 0x8) === 0x8
+    );
 
     if (filteredGuilds.length > 0) {
       const botGuilds = await orm.em.find(Settings, {});
       if (botGuilds.length > 0) {
         filteredGuilds.forEach((guild) => {
-          const isIn = botGuilds.find(x => x.guildId === guild.id);
+          const isIn = botGuilds.find((x) => x.guildId === guild.id);
           if (isIn) {
             guild.in = true;
           }
@@ -136,7 +142,6 @@ const main = async () => {
     curr.setSeconds(curr.getSeconds() + token.expires_in);
 
     if (!user) {
-
       const insert = orm.em.create(Users, userData);
 
       await orm.em.persistAndFlush(insert);
@@ -162,35 +167,31 @@ const main = async () => {
     req.session.userId = user?.id;
     console.log(req.session);
 
-
     res.redirect(process.env.CORS_ORIGIN + "/dashboard");
   });
 
   app.listen(parseInt(process.env.PORT), () => {
-    console.log("Server up and running on localhost:"+process.env.PORT);
+    console.log("Server up and running on localhost:" + process.env.PORT);
+    console.log("Cors origin " + process.env.CORS_ORIGIN);
   });
 };
 
 main();
 
-
-
-
-
 // var query = `query Discord($userData: DiscordUser!) {
-    //   DiscordLogin(user: $userData)
-    // }`;
+//   DiscordLogin(user: $userData)
+// }`;
 
-    // await axios({
-    //   url: "http://localhost:4000/graphql",
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   data: JSON.stringify({
-    //     query,
-    //     variables: {
-    //       userData,
-    //     },
-    //   }),
-    // });
+// await axios({
+//   url: "http://localhost:4000/graphql",
+//   method: "POST",
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+//   data: JSON.stringify({
+//     query,
+//     variables: {
+//       userData,
+//     },
+//   }),
+// });

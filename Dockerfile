@@ -1,26 +1,10 @@
-FROM node:16
-
-# Create app directory
+FROM node:16-alpine
 WORKDIR /usr/src/app
-
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available (npm@5+)
-COPY package.json ./
-COPY yarn.lock ./
-
-RUN yarn
-# If you are building your code for production
-# RUN npm ci --only=production
-
-# Bundle app source
+COPY package.json yarn.lock ./
 COPY . .
 COPY .env.production .env
-
-RUN yarn build
-
+RUN yarn install --frozen-lockfile && yarn build && yarn cache clean
 ENV NODE_ENV production
-
 EXPOSE 4000
 CMD [ "node", "dist/index.js" ]
 USER node
