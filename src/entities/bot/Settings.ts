@@ -20,27 +20,27 @@ export class Settings {
   @Property()
   userCount: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true })
   modRole: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true })
   adminRole: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true })
   muteRole: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true, type: "text" })
   disabledCommands: string;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true })
   systemNotice: Boolean;
 
-  @Field()
+  @Field({ nullable: true })
   @Property({ nullable: true })
   cleanup: Boolean;
 }
