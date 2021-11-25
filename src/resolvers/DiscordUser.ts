@@ -2,14 +2,13 @@ import { Users } from "../entities/Users";
 import { DiscordGuilds, MyContext } from "../types";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
+import { GuildTraffic } from "../entities/bot/GuildTraffic";
+import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
 
 @Resolver()
 export class DiscordUsersResolver {
   @Query(() => Users, { nullable: true })
   async me(@Ctx() { em, req, res }: MyContext): Promise<Users | null> {
-    
-    console.log("request from urql ",req.session);
-
     if (!req.session.userId) return null;
     const user = await em.findOne(Users, { id: req.session.userId });
     // console.log(user);
@@ -33,10 +32,7 @@ export class DiscordUsersResolver {
   }
 
   @Query(() => [DiscordGuilds], { nullable: true })
-  async guilds(
-    @Ctx() { em, req }: MyContext
-  ): Promise<DiscordGuilds[] | null> {
-    console.log("request from urql ",req.session);
+  async guilds(@Ctx() { em, req }: MyContext): Promise<DiscordGuilds[] | null> {
     if (!req.session.userId) return null;
     const qb = em.createQueryBuilder(Users);
 
@@ -46,13 +42,12 @@ export class DiscordUsersResolver {
       .execute("get")) as Users;
     if (!result) return null;
     const guilds = result.guilds as DiscordGuilds[];
-    
+
     return guilds;
   }
 
   @Mutation(() => Boolean)
   async logout(@Ctx() { req, res }: MyContext): Promise<Boolean> {
-    console.log("request from urql ",req.session);
     res.clearCookie("qid");
     if (!req.session.userId) {
       return false;
@@ -71,19 +66,74 @@ export class DiscordUsersResolver {
     );
   }
 
-  @Query(() => Settings, {nullable: true})
+  @Query(() => Settings, { nullable: true })
   async currGuild(
     @Ctx() { em, req }: MyContext,
-    @Arg("guildId") guildId : string
-  ) : Promise<Settings | null> {
-    console.log("request from urql ",req.session);
+    @Arg("guildId") guildId: string
+  ): Promise<Settings | null> {
     if (!req.session.userId) return null;
-    const isUserTellingThruth = await em.findOne(Users, {id: req.session.userId});
+    const isUserTellingThruth = await em.findOne(Users, {
+      id: req.session.userId,
+    });
     if (isUserTellingThruth) {
-      const usersGuild = isUserTellingThruth.guilds.find(x => x.id === guildId)
+      const usersGuild = isUserTellingThruth.guilds.find(
+        (x) => x.id === guildId
+      );
       if (!usersGuild) return null;
     }
-    const guildSettings = await em.findOne(Settings, {guildId})
+    const guildSettings = await em.findOne(Settings, { guildId });
     return guildSettings;
+  }
+
+  @Query(() => [GuildTraffic], { nullable: true })
+  async guildTraffic(
+    @Ctx() { em, req }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<GuildTraffic[] | null> {
+    if (!req.session.userId) return null;
+    const context = em.fork();
+    const qb = context.createQueryBuilder(Users);
+
+    const result = (await qb
+      .select("guilds")
+      .where({ id: req.session.userId })
+      .execute("get")) as Users;
+
+    if (!result) return null;
+    const guilds = result.guilds as DiscordGuilds[];
+    const guild = guilds.find((x) => x.id === guildId);
+
+    if (!guild) return null;
+
+    const traffic = await context.find(GuildTraffic, { guildId });
+    console.log(traffic[0].createdAt);
+
+    return traffic;
+  }
+
+  @Query(() => [StreamLeaderboard], { nullable: true })
+  async streamerRanking(
+    @Ctx() { em, req }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<StreamLeaderboard[] | null> {
+    if (!req.session.userId) return null;
+    const isUserTellingThruth = await em.findOne(Users, {
+      id: req.session.userId,
+    });
+    if (isUserTellingThruth) {
+      const usersGuild = isUserTellingThruth.guilds.find(
+        (x) => x.id === guildId
+      );
+      if (!usersGuild) return null;
+    }
+
+    const leaderboard = await em.find(StreamLeaderboard, { guildId });
+    if (leaderboard.length < 1) return null;
+    leaderboard.sort((a, b) => {
+      if (a.timeStreamed > b.timeStreamed) return -1;
+      if (a.timeStreamed < b.timeStreamed) return 1;
+      return 0;
+    });
+    return leaderboard;
   }
 }

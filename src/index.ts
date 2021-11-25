@@ -31,7 +31,7 @@ const main = async () => {
   await orm.getMigrator().up();
 
   const app = express();
-  app.set("trust proxy", 1);
+  // app.set("trust proxy", 1);
   app.use(
     cors({
       credentials: true,
@@ -89,7 +89,7 @@ const main = async () => {
         client_secret: config.clientSecret,
         code: code!.toString(),
         grant_type: "authorization_code",
-        redirect_uri: `http://192.168.1.14:4000/discord/auth/callback`,
+        redirect_uri: `http://localhost:4000/discord/auth/callback`,
         scope: "identify",
       }),
       headers: {

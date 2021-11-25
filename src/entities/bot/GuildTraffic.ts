@@ -16,6 +16,14 @@ export class GuildTraffic {
   @Property()
   userId: string;
 
+  @Field({nullable: true})
+  @Property({nullable: true})
+  username: string;
+
+  @Field({nullable: true})
+  @Property({nullable: true})
+  nickname: string;
+
   @Field()
   @Property()
   joined: boolean;

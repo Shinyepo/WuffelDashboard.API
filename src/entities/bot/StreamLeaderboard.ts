@@ -18,6 +18,14 @@ export class StreamLeaderboard {
 
   @Field()
   @Property()
+  username: string;
+
+  @Field()
+  @Property()
+  nickname: string;
+
+  @Field()
+  @Property()
   timeStreamed: string;
 
   @Field(() => String)
