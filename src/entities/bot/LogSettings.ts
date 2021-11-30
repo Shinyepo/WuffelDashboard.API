@@ -16,7 +16,7 @@ export class LogSettings {
 
   @Field(() => [LogObject], {nullable: true})
   @Property({type: "json", nullable: true})
-  settings: LogObject[];
+  settings?: LogObject[];
 
   @Field(() => String)
   @Property({ type: "date", onCreate: () => new Date() })

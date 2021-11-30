@@ -92,22 +92,24 @@ export class DiscordUser {
 }
 @ObjectType()
 export class IgnoredLogObject {
-  @Field(() => [String])
-  users: String[];
-  @Field(() => [String])
-  channels: String[];
+  @Field(() => [String], {nullable: true})
+  users?: String[];
+  @Field(() => [String], {nullable: true})
+  channels?: String[];
 }
 
-@InputType()
+@ObjectType()
 export class LogObject {
+  @Field()
+  id: string;
   @Field()
   name: String;
   @Field()
   on: Boolean;
-  @Field()
-  channel: String;
-  @Field(() => IgnoredLogObject)
-  ignored: IgnoredLogObject;
+  @Field({nullable: true})
+  channel?: String;
+  @Field(() => IgnoredLogObject, {nullable: true})
+  ignored?: IgnoredLogObject;
 }
 
 

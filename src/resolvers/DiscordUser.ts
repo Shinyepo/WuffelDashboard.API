@@ -107,7 +107,6 @@ export class DiscordUsersResolver {
     if (!guild) return null;
 
     const traffic = await context.find(GuildTraffic, { guildId });
-    console.log(traffic[0].createdAt);
 
     return traffic;
   }

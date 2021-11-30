@@ -9,6 +9,7 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
+import { LogSettings } from "../entities/bot/LogSettings";
 
 @Resolver()
 export class SettingsResolver {
@@ -18,8 +19,7 @@ export class SettingsResolver {
     @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<String | undefined> {
-    const context = em.fork();
-    const prefix = await context.findOne(Settings, { guildId });
+    const prefix = await em.findOne(Settings, { guildId });
     return prefix?.prefix;
   }
 
@@ -30,11 +30,20 @@ export class SettingsResolver {
     @Arg("guildId") guildId: string,
     @Arg("prefix") prefix: string
   ): Promise<String | null> {
-      const context = em.fork();
-      const settings = await context.findOne(Settings, {guildId});
-      if (!settings) return null;
-      settings.prefix = prefix;
-      await context.flush();
-      return settings.prefix;
+    const settings = await em.findOne(Settings, { guildId });
+    if (!settings) return null;
+    settings.prefix = prefix;
+    await em.flush();
+    return settings.prefix;
+  }
+
+  @Query(() => LogSettings)
+  @UseMiddleware(isAuth)
+  async getLogSettings(
+    @Ctx() { em }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<LogSettings | null> {
+    const data = await em.findOne(LogSettings, {guildId});
+    return data;
   }
 }
