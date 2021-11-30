@@ -28,7 +28,7 @@ export class DiscordGuilds {
   id: String;
   @Field()
   name: String;
-  @Field(() => String, {nullable: true})
+  @Field({ nullable: true })
   icon: String;
   @Field()
   owner: boolean;
@@ -38,11 +38,11 @@ export class DiscordGuilds {
   permissions_new: string;
   @Field(() => [String])
   features: String[];
-  @Field({defaultValue: false})
+  @Field({ defaultValue: false })
   in: boolean;
 }
 
-export class SessionUser {  
+export class SessionUser {
   id: String;
   username: String;
   avatar: String;
@@ -54,8 +54,7 @@ export class SessionUser {
   email: String;
   verified: boolean;
   guilds: DiscordGuilds[];
-  constructor() {
-  }
+  constructor() {}
 }
 
 @InputType()
@@ -91,3 +90,24 @@ export class DiscordUser {
   @Field(() => [DiscordGuilds])
   guilds: DiscordGuilds[];
 }
+@ObjectType()
+export class IgnoredLogObject {
+  @Field(() => [String])
+  users: String[];
+  @Field(() => [String])
+  channels: String[];
+}
+
+@InputType()
+export class LogObject {
+  @Field()
+  name: String;
+  @Field()
+  on: Boolean;
+  @Field()
+  channel: String;
+  @Field(() => IgnoredLogObject)
+  ignored: IgnoredLogObject;
+}
+
+

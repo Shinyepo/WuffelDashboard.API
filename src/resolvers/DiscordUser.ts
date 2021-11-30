@@ -1,9 +1,10 @@
 import { Users } from "../entities/Users";
 import { DiscordGuilds, MyContext } from "../types";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
 import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
+import { isAuth } from "../middleware/isAuth";
 
 @Resolver()
 export class DiscordUsersResolver {
@@ -112,6 +113,7 @@ export class DiscordUsersResolver {
   }
 
   @Query(() => [StreamLeaderboard], { nullable: true })
+  @UseMiddleware(isAuth)
   async streamerRanking(
     @Ctx() { em, req }: MyContext,
     @Arg("guildId") guildId: string
