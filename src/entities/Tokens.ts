@@ -18,7 +18,7 @@ export class Tokens {
 
   @Field()
   @Property()
-  refresh_token: String;
+  refresh_token: string;
 
   @Field(() => String)
   @Property({type: "date"})

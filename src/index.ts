@@ -26,6 +26,7 @@ import { DiscordUsersResolver } from "./resolvers/DiscordUser";
 import { Settings } from "./entities/bot/Settings";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { SettingsResolver } from "./resolvers/Settings";
+import { DiscordResolver } from "./resolvers/Discord";
 
 const main = async () => {
   const orm = await MikroORM.init<PostgreSqlDriver>(mikroOrmConfig);
@@ -67,7 +68,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UsersResolver, DiscordUsersResolver, SettingsResolver],
+      resolvers: [UsersResolver, DiscordUsersResolver, SettingsResolver, DiscordResolver],
       validate: false,
     }),
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],

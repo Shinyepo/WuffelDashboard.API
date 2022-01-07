@@ -1,5 +1,5 @@
 import { isAuth } from "../middleware/isAuth";
-import { MyContext } from "../types";
+import { MyContext, settingsArgumentType } from "../types";
 import {
   Arg,
   Ctx,
@@ -10,6 +10,7 @@ import {
 } from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
 import { LogSettings } from "../entities/bot/LogSettings";
+import { omitTypename } from "../middleware/omitFields";
 
 @Resolver()
 export class SettingsResolver {
@@ -45,5 +46,27 @@ export class SettingsResolver {
   ): Promise<LogSettings | null> {
     const data = await em.findOne(LogSettings, {guildId});
     return data;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  @UseMiddleware(omitTypename)
+  async setLogSettings(
+    @Ctx() {em} : MyContext,
+    @Arg("guildId") guildId: string,
+    @Arg("settings", () => [settingsArgumentType]) settings: settingsArgumentType[]
+  ): Promise<Boolean> {
+    const logSettings = await em.findOne(LogSettings, { guildId });
+    if (!logSettings) {
+      const newEntry = await em.create(LogSettings, {
+        guildId,
+        settings,
+      });
+      await em.persistAndFlush(newEntry);
+      return true;
+    }
+    logSettings.settings = settings;
+    await em.flush();
+    return true;
   }
 }

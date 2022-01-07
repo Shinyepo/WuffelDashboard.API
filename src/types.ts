@@ -14,12 +14,48 @@ declare module "express-session" {
   }
 }
 
+@ObjectType()
+export class DiscordChannelSelectList  {
+  @Field()
+  id: string;
+  @Field({nullable: true})
+  type?: number;
+  @Field({nullable: true})
+  name?: string;
+  @Field({nullable: true})
+  position?: number;
+  @Field({nullable: true})
+  parent_id?: string;
+  @Field({nullable: true})
+  guild_id?: string;
+  @Field(() => [DiscordChannelSelectList], {nullable: true})
+  channels?: DiscordChannelSelectList[]
+}
+export type DiscordChannel = {
+  [key: string]: any,
+  id: string,
+  last_message_id?: string,
+  type: number,
+  name: string,
+  position: number,
+  parent_id?: string,
+  topic?: string,
+  guild_id: string,
+  permission_overwrites?: string[],
+  nsfw: boolean,
+  rate_limit_per_user: number,
+  banner?: string,
+
+
+}
+
+
 export type DiscordTokenResponse = {
-  access_token: String;
-  token_type: String;
+  access_token: string;
+  token_type: string;
   expires_in: number;
-  refresh_token: String;
-  scope: String;
+  refresh_token: string;
+  scope: string;
 };
 
 @ObjectType()
@@ -103,13 +139,24 @@ export class LogObject {
   @Field()
   id: string;
   @Field()
-  name: String;
+  name: string;
   @Field()
   on: Boolean;
   @Field({nullable: true})
-  channel?: String;
+  channel?: string;
   @Field(() => IgnoredLogObject, {nullable: true})
   ignored?: IgnoredLogObject;
 }
 
 
+@InputType()
+export class settingsArgumentType {
+  @Field()
+  id: string;
+  @Field()
+  name: string;
+  @Field()
+  on: Boolean;
+  @Field({nullable: true})
+  channel?: string;
+}
