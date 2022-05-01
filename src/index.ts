@@ -33,11 +33,11 @@ const main = async () => {
   await orm.getMigrator().up();
 
   const app = express();
-  // app.set("trust proxy", 1);
+  app.set("trust proxy", 1);  
   app.use(
     cors({
-      credentials: true,
       origin: process.env.CORS_ORIGIN,
+      credentials: true,
     })
   );
 

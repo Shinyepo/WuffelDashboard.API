@@ -44,17 +44,18 @@ export class SettingsResolver {
     @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<LogSettings | null> {
-    const data = await em.findOne(LogSettings, {guildId});
-    return data;
+    const data = await em.findOne(LogSettings, { guildId });
+    return data ?? null;
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   @UseMiddleware(omitTypename)
   async setLogSettings(
-    @Ctx() {em} : MyContext,
+    @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string,
-    @Arg("settings", () => [settingsArgumentType]) settings: settingsArgumentType[]
+    @Arg("settings", () => [settingsArgumentType])
+    settings: settingsArgumentType[]
   ): Promise<Boolean> {
     const logSettings = await em.findOne(LogSettings, { guildId });
     if (!logSettings) {

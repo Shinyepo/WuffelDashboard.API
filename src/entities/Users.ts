@@ -50,9 +50,9 @@ export class Users {
   @Property({nullable: true})
   mfa_enabled: boolean;
 
-  @Field()
+  @Field({nullable: true})
   @Property({nullable: true})
-  premium_type: number;
+  premium_type?: number;
 
   @Field()
   @Property()

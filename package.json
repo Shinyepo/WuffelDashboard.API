@@ -23,6 +23,7 @@
     "@types/node-fetch": "^2.5.12",
     "@types/react": "^17.0.30",
     "@types/redis": "^2.8.32",
+    "nodemon": "^2.0.15",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "ts-node": "^10.3.0",
@@ -45,8 +46,8 @@
     "pg": "^8.7.1",
     "redis": "^3.1.2",
     "reflect-metadata": "^0.1.13",
-    "type-graphql": "^1.1.1",
-    "ts-node": "^10.3.0"
+    "ts-node": "^10.3.0",
+    "type-graphql": "^1.1.1"
   },
   "mikro-orm": {
     "useTsNode": true,
