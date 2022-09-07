@@ -1,6 +1,13 @@
 import { Users } from "../entities/Users";
 import { DiscordGuilds, MyContext } from "../types";
-import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
 import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
@@ -12,11 +19,9 @@ export class DiscordUsersResolver {
   async me(@Ctx() { em, req, res }: MyContext): Promise<Users | null> {
     if (!req.session.userId) return null;
     const user = await em.findOne(Users, { id: req.session.userId });
-    // console.log(user);
 
     if (!user) {
       console.log("no user");
-
       await new Promise((resolver) =>
         req.session.destroy((err) => {
           if (err) {
@@ -49,20 +54,21 @@ export class DiscordUsersResolver {
 
   @Mutation(() => Boolean)
   async logout(@Ctx() { req, res }: MyContext): Promise<Boolean> {
-    res.clearCookie("qid");
-    if (!req.session.userId) {
-      return false;
-    }
+    // res.clearCookie("qid");
+    // if (!req.session.userId) {
+    //   return Promise.resolve(false);
+    // }
 
     return new Promise((resolver) =>
       req.session.destroy((err) => {
+        res.clearCookie("qid");
         if (err) {
           console.log(err);
           resolver(false);
           return;
         }
 
-        resolver(true);
+        return resolver(true);
       })
     );
   }
@@ -72,7 +78,9 @@ export class DiscordUsersResolver {
     @Ctx() { em, req }: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<Settings | null> {
-    if (!req.session.userId) return null;
+    if (!req.session.userId) {
+      return null;
+    };
     const isUserTellingThruth = await em.findOne(Users, {
       id: req.session.userId,
     });

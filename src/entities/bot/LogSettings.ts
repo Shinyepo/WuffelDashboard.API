@@ -19,10 +19,10 @@ export class LogSettings {
   settings?: LogObject[];
 
   @Field(() => String)
-  @Property({ type: "date", onCreate: () => new Date() })
-  createdAt: String;
+  @Property({ type: "date" })
+  createdAt? = new Date();
 
   @Field(() => String)
   @Property({ type: "date", onUpdate: () => new Date() })
-  updatedAt: String;
+  updatedAt? = new Date();
 }

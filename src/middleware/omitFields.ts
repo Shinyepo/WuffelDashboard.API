@@ -2,7 +2,7 @@ import { MiddlewareFn } from "type-graphql";
 import { MyContext } from "../types";
 
 export const omitTypename: MiddlewareFn<MyContext> = async (
-  { context, args },
+  { args },
   next
 ) => {
   if (args) {

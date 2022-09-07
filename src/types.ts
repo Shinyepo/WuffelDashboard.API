@@ -127,6 +127,7 @@ export class DiscordUser {
   guilds: DiscordGuilds[];
 }
 @ObjectType()
+@InputType()
 export class IgnoredLogObject {
   @Field(() => [String], {nullable: true})
   users?: String[];
@@ -135,6 +136,7 @@ export class IgnoredLogObject {
 }
 
 @ObjectType()
+@InputType()
 export class LogObject {
   @Field()
   id: string;

@@ -13,12 +13,20 @@ export class Settings {
   guildId: string;
 
   @Field()
+  @Property({ onCreate: () => true })
+  active: boolean;
+
+  @Field()
   @Property()
   prefix: string;
 
   @Field()
   @Property()
   userCount: string;
+
+  @Field()
+  @Property({ nullable: true })
+  guildRole?: string;
 
   @Field({ nullable: true })
   @Property({ nullable: true })

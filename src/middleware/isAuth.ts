@@ -6,7 +6,10 @@ export const isAuth: MiddlewareFn<MyContext> = async (
   { context, args },
   next
 ) => {
+  console.log(context.req.session);
+  
   if (!context.req.session.userId) {
+    context.res.redirect("/");
     throw new Error("not authenticated");
     // throw new Error("")
   }

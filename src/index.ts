@@ -7,13 +7,11 @@ import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { UsersResolver } from "./resolvers/Users";
-import Redis from "redis";
+import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
 import {
   DiscordGuilds,
-  DiscordTokenResponse,
-  DiscordUser,
   MyContext,
 } from "./types";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
@@ -42,9 +40,15 @@ const main = async () => {
   );
 
   const RedisStore = connectRedis(session);
-  const redisClient = Redis.createClient({
+  let redisClient = createClient({
+    legacyMode: true,
     url: process.env.REDIS_URL,
   });
+  redisClient.connect().catch(console.error);
+
+  redisClient.on("error", (err) => console.log(err));
+  redisClient.on("connect", () => console.log("Connected to Redis"))
+  
 
   app.use(
     session({
@@ -100,7 +104,7 @@ const main = async () => {
     });
     if (oauthResult.status !== 200)
       return res.redirect(process.env.CORS_ORIGIN);
-    const token = oauthResult.data as DiscordTokenResponse;
+    const token = oauthResult.data as Tokens;
     if (!token) return res.redirect(process.env.CORS_ORIGIN);
 
     const me = await axios({
@@ -110,7 +114,7 @@ const main = async () => {
       },
     });
     if (me.status !== 200) return res.redirect(process.env.CORS_ORIGIN);
-    const userData = me.data as DiscordUser;
+    const userData = me.data as Users;
     const guilds = await axios({
       url: "https://discord.com/api/users/@me/guilds",
       headers: {
@@ -124,7 +128,7 @@ const main = async () => {
     );
 
     if (filteredGuilds.length > 0) {
-      const botGuilds = await orm.em.find(Settings, {});
+      const botGuilds = await orm.em.fork().find(Settings, {});
       if (botGuilds.length > 0) {
         filteredGuilds.forEach((guild) => {
           const isIn = botGuilds.find((x) => x.guildId === guild.id);
@@ -137,37 +141,40 @@ const main = async () => {
 
     userData.guilds = filteredGuilds;
 
-    const user = await orm.em.findOne(Users, { id: userData.id });
-    const userTokens = await orm.em.findOne(Tokens, { id: userData.id });
+    let user = await orm.em.fork().findOne(Users, { id: userData.id });
+    
+    let userTokens = await orm.em.fork().findOne(Tokens, { id: userData.id });
 
     const curr = new Date();
-    curr.setSeconds(curr.getSeconds() + token.expires_in);
+    console.log(typeof token.expires_in);
+    
+    
+    curr.setSeconds(curr.getSeconds() + parseInt(token.expires_in.toString()));
 
     if (!user) {
-      const insert = orm.em.create(Users, userData);
+      user = orm.em.fork().create(Users, userData);
 
-      await orm.em.persistAndFlush(insert);
+      await orm.em.fork().persistAndFlush(user);
     } else {
       wrap(user).assign(userData);
 
-      await orm.em.persistAndFlush(user);
+      await orm.em.fork().persistAndFlush(user);
     }
 
     if (!userTokens) {
-      const insert = orm.em.create(Tokens, {
+      userTokens = orm.em.fork().create(Tokens, {
         ...token,
         expires_in: curr,
         id: userData.id,
       });
 
-      await orm.em.persistAndFlush(insert);
+      await orm.em.fork().persistAndFlush(userTokens);
     } else {
       wrap(userTokens).assign({ ...token, expires_in: curr });
 
-      await orm.em.persistAndFlush(userTokens);
+      await orm.em.fork().persistAndFlush(userTokens);
     }
     req.session.userId = user?.id;
-    console.log(req.session);
 
     res.redirect(process.env.CORS_ORIGIN + "/dashboard");
   });

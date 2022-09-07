@@ -1,7 +1,6 @@
 import { EntityManager } from "@mikro-orm/knex";
 import axios from "axios";
 import { Tokens } from "../entities/Tokens";
-import { DiscordTokenResponse } from "../types";
 import config from "../config";
 
 export const getToken = async (em: EntityManager, userId: string) => {
@@ -27,7 +26,7 @@ export const getToken = async (em: EntityManager, userId: string) => {
     if (apiResult.status !== 200) {
       return null;
     }
-    const response = apiResult.data as DiscordTokenResponse;
+    const response = apiResult.data as Tokens;
     const updatedUserData = await updateToken(em, userId, response);
 
     return updatedUserData?.access_token;
@@ -38,7 +37,7 @@ export const getToken = async (em: EntityManager, userId: string) => {
 export const updateToken = async (
   em: EntityManager,
   userId: String,
-  response: DiscordTokenResponse
+  response: Tokens
 ) => {
   const userData = await em.findOne(Tokens, { id: userId });
   if (!userData) {
@@ -55,7 +54,7 @@ export const updateToken = async (
 export const insertNewToken = async (
   em: EntityManager,
   userId: String,
-  response: DiscordTokenResponse
+  response: Tokens
 ) => {
   const newEntry = await em.create(Tokens, {
     ...response,

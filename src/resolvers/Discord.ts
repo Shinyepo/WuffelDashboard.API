@@ -1,9 +1,8 @@
-import { DiscordChannel, DiscordChannelSelectList, LogObject, MyContext } from "../types";
-import { Arg, Ctx, Mutation, Query, Resolver, UseMiddleware } from "type-graphql";
+import { DiscordChannel, DiscordChannelSelectList, MyContext } from "../types";
+import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import axios from "axios";
 import config from "../config";
 import { isAuth } from "../middleware/isAuth";
-import _ from "lodash";
 
 @Resolver()
 export class DiscordResolver {
