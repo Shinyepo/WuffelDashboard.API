@@ -1,9 +1,16 @@
-import { DiscordChannel, DiscordChannelSelectList, MyContext } from "../types";
+import {
+  DiscordChannel,
+  DiscordChannelSelectList,
+  DiscordGuilds,
+  MyContext,
+} from "../types";
 import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
 import axios from "axios";
 import config from "../config";
 import { isAuth } from "../middleware/isAuth";
-
+import { GuildTraffic } from "../entities/bot/GuildTraffic";
+import { omitTypename } from "../middleware/omitFields";
+import { Users } from "../entities/Users";
 @Resolver()
 export class DiscordResolver {
   @Query(() => [DiscordChannelSelectList], { nullable: true })
@@ -79,6 +86,33 @@ export class DiscordResolver {
     return categoryList;
   }
 
+  @Query(() => [GuildTraffic], { nullable: true })
+  @UseMiddleware(omitTypename)
+  async guildTraffic(
+    @Ctx() { em, req }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<GuildTraffic[] | null> {
+    if (!req.session.userId) return null;
+    const context = em.fork();
+    const qb = context.createQueryBuilder(Users);
 
-  
+    const result = (await qb
+      .select("guilds")
+      .where({ id: req.session.userId })
+      .execute("get")) as Users;
+
+    if (!result) return null;
+    const guilds = result.guilds as DiscordGuilds[];
+    const guild = guilds.find((x) => x.id === guildId);
+
+    if (!guild) return null;
+    const lastDay = new Date(new Date().getTime() - 1000 * 60 * 60 * 24);
+
+    const traffic = await context.find(GuildTraffic, {
+      guildId,
+      createdAt: { $gt: lastDay },
+    });
+
+    return traffic;
+  }
 }

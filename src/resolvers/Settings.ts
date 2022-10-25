@@ -40,6 +40,7 @@ export class SettingsResolver {
 
   @Query(() => LogSettings)
   @UseMiddleware(isAuth)
+  @UseMiddleware(omitTypename)
   async getLogSettings(
     @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string

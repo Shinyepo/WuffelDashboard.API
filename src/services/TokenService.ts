@@ -4,8 +4,6 @@ import { Tokens } from "../entities/Tokens";
 import config from "../config";
 
 export const getToken = async (em: EntityManager, userId: string) => {
-  console.log("work");
-
   const userData = await em.findOne(Tokens, { id: "190561911492968448" });
   if (!userData) return null;
   if (userData.expires_in < new Date()) {
@@ -60,7 +58,6 @@ export const insertNewToken = async (
     ...response,
     id: userId,
   });
-  console.log(newEntry);
 
   await em.persistAndFlush(newEntry);
   return newEntry;

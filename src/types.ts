@@ -150,6 +150,15 @@ export class LogObject {
   ignored?: IgnoredLogObject;
 }
 
+@ObjectType()
+export class rrResponse {
+  @Field()
+  success: Boolean
+
+  @Field()
+  id: string
+}
+
 
 @InputType()
 export class settingsArgumentType {

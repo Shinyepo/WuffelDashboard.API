@@ -20,9 +20,9 @@ export class StreamLeaderboard {
   @Property()
   username: string;
 
-  @Field()
-  @Property()
-  nickname: string;
+  @Field({nullable: true})
+  @Property({nullable: true})
+  nickname?: string;
 
   @Field()
   @Property()

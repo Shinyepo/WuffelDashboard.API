@@ -28,7 +28,7 @@ export class GuildTraffic {
   @Property()
   joined: boolean;
 
-  @Field(() => String)
+  @Field(() => Date)
   @Property({ type: "date", onCreate: () => new Date() })
-  createdAt: string;
+  createdAt: Date;
 }

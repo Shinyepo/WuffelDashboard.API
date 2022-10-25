@@ -2,7 +2,7 @@ import "reflect-metadata";
 import "dotenv-safe/config";
 import { MikroORM, wrap } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-import mikroOrmConfig from "./mikro-orm.config";
+import mikroOrmConfig from "./mikro-config";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -146,7 +146,6 @@ const main = async () => {
     let userTokens = await orm.em.fork().findOne(Tokens, { id: userData.id });
 
     const curr = new Date();
-    console.log(typeof token.expires_in);
     
     
     curr.setSeconds(curr.getSeconds() + parseInt(token.expires_in.toString()));

@@ -1,5 +1,5 @@
 import { Users } from "../entities/Users";
-import { DiscordGuilds, MyContext } from "../types";
+import { DiscordGuilds, MyContext, rrResponse } from "../types";
 import {
   Arg,
   Ctx,
@@ -12,6 +12,7 @@ import { Settings } from "../entities/bot/Settings";
 import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
 import { isAuth } from "../middleware/isAuth";
+import { omitTypename } from "../middleware/omitFields";
 
 @Resolver()
 export class DiscordUsersResolver {
@@ -38,6 +39,7 @@ export class DiscordUsersResolver {
   }
 
   @Query(() => [DiscordGuilds], { nullable: true })
+  @UseMiddleware(omitTypename)
   async guilds(@Ctx() { em, req }: MyContext): Promise<DiscordGuilds[] | null> {
     if (!req.session.userId) return null;
     const qb = em.createQueryBuilder(Users);
@@ -74,13 +76,14 @@ export class DiscordUsersResolver {
   }
 
   @Query(() => Settings, { nullable: true })
+  @UseMiddleware(omitTypename)
   async currGuild(
     @Ctx() { em, req }: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<Settings | null> {
     if (!req.session.userId) {
       return null;
-    };
+    }
     const isUserTellingThruth = await em.findOne(Users, {
       id: req.session.userId,
     });
@@ -94,33 +97,9 @@ export class DiscordUsersResolver {
     return guildSettings;
   }
 
-  @Query(() => [GuildTraffic], { nullable: true })
-  async guildTraffic(
-    @Ctx() { em, req }: MyContext,
-    @Arg("guildId") guildId: string
-  ): Promise<GuildTraffic[] | null> {
-    if (!req.session.userId) return null;
-    const context = em.fork();
-    const qb = context.createQueryBuilder(Users);
-
-    const result = (await qb
-      .select("guilds")
-      .where({ id: req.session.userId })
-      .execute("get")) as Users;
-
-    if (!result) return null;
-    const guilds = result.guilds as DiscordGuilds[];
-    const guild = guilds.find((x) => x.id === guildId);
-
-    if (!guild) return null;
-
-    const traffic = await context.find(GuildTraffic, { guildId });
-
-    return traffic;
-  }
-
   @Query(() => [StreamLeaderboard], { nullable: true })
   @UseMiddleware(isAuth)
+  @UseMiddleware(omitTypename)
   async streamerRanking(
     @Ctx() { em, req }: MyContext,
     @Arg("guildId") guildId: string
@@ -144,5 +123,19 @@ export class DiscordUsersResolver {
       return 0;
     });
     return leaderboard;
+  }
+
+  @Mutation(() => rrResponse)
+  @UseMiddleware(isAuth)
+  async removeRanking(
+    @Ctx() { em, req }: MyContext,
+    @Arg("id") id: string
+  ): Promise<rrResponse> {
+    if (!req.session.userId) return {success: false, id};
+    const ranking = await em.findOne(StreamLeaderboard, { id: parseInt(id) });
+    if (!ranking) return {success: false, id};
+    await em.removeAndFlush(ranking);
+
+    return {success: true, id};
   }
 }
