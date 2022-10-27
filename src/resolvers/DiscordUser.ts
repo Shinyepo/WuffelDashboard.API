@@ -9,7 +9,6 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { Settings } from "../entities/bot/Settings";
-import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
 import { isAuth } from "../middleware/isAuth";
 import { omitTypename } from "../middleware/omitFields";
@@ -77,6 +76,7 @@ export class DiscordUsersResolver {
 
   @Query(() => Settings, { nullable: true })
   @UseMiddleware(omitTypename)
+  @UseMiddleware(isAuth)
   async currGuild(
     @Ctx() { em, req }: MyContext,
     @Arg("guildId") guildId: string
