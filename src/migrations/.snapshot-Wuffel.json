@@ -25,6 +25,15 @@
           "nullable": false,
           "mappedType": "string"
         },
+        "username": {
+          "name": "username",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        },
         "guild_id": {
           "name": "guild_id",
           "type": "varchar(255)",

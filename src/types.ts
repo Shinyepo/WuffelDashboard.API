@@ -177,6 +177,8 @@ export class LogActivity {
   @Field()
   userId: string;
   @Field()
+  username?: string;
+  @Field()
   activity: string;
   @Field()
   activityType: boolean;

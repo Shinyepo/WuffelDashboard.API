@@ -14,6 +14,10 @@ export class Activity {
 
   @Field()
   @Property()
+  username: string;
+
+  @Field()
+  @Property()
   guildId: string;
 
   @Field()
