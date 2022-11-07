@@ -4,13 +4,22 @@ import {
   DiscordGuilds,
   MyContext,
 } from "../types";
-import { Arg, Ctx, Query, Resolver, UseMiddleware } from "type-graphql";
+import {
+  Arg,
+  Ctx,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from "type-graphql";
 import axios from "axios";
 import config from "../config";
 import { isAuth } from "../middleware/isAuth";
 import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { omitTypename } from "../middleware/omitFields";
 import { Users } from "../entities/Users";
+import { Settings } from "../entities/bot/Settings";
+import { logActivity } from "../services/ActivityService";
 @Resolver()
 export class DiscordResolver {
   @Query(() => [DiscordChannelSelectList], { nullable: true })
@@ -108,7 +117,7 @@ export class DiscordResolver {
 
     const result = (await qb
       .select("guilds")
-      .where({ id: req.session.userId })
+      .where({ userId: req.session.userId })
       .execute("get")) as Users;
 
     if (!result) return null;
@@ -124,5 +133,26 @@ export class DiscordResolver {
     });
 
     return traffic;
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async toggleBot(
+    @Ctx() { em, req }: MyContext,
+    @Arg("guildId") guildId: string,
+    @Arg("state") state: boolean
+  ): Promise<boolean> {
+    const settings = await em.fork().findOne(Settings, { guildId });
+    if (!settings) return Promise.reject(false);
+    if (state === settings.active) return Promise.reject(false);
+    settings.active = !settings.active;
+    await em.fork().persistAndFlush(settings);
+    await logActivity(em, {
+      activity: "settings.mainSwitch",
+      userId: req.session.userId,
+      guildId,
+      activityType: settings.active,
+    });
+    return Promise.resolve(true);
   }
 }

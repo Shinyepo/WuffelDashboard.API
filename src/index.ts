@@ -2,7 +2,7 @@ import "reflect-metadata";
 import "dotenv-safe/config";
 import { MikroORM, wrap } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
-import mikroOrmConfig from "./mikro-config";
+import mikroOrmConfig from "./mikro-orm.config";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -10,10 +10,7 @@ import { UsersResolver } from "./resolvers/Users";
 import { createClient } from "redis";
 import session from "express-session";
 import connectRedis from "connect-redis";
-import {
-  DiscordGuilds,
-  MyContext,
-} from "./types";
+import { MyContext } from "./types";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import cors from "cors";
 import axios from "axios";
@@ -21,17 +18,18 @@ import config from "./config";
 import { Users } from "./entities/Users";
 import { Tokens } from "./entities/Tokens";
 import { DiscordUsersResolver } from "./resolvers/DiscordUser";
-import { Settings } from "./entities/bot/Settings";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
 import { SettingsResolver } from "./resolvers/Settings";
 import { DiscordResolver } from "./resolvers/Discord";
+import { ActivityResolver } from "./resolvers/Activity";
+import { getGuilds } from "./services/GuildService";
 
 const main = async () => {
   const orm = await MikroORM.init<PostgreSqlDriver>(mikroOrmConfig);
   await orm.getMigrator().up();
 
   const app = express();
-  app.set("trust proxy", 1);  
+  app.set("trust proxy", 1);
   app.use(
     cors({
       origin: process.env.CORS_ORIGIN,
@@ -47,8 +45,7 @@ const main = async () => {
   redisClient.connect().catch(console.error);
 
   redisClient.on("error", (err) => console.log(err));
-  redisClient.on("connect", () => console.log("Connected to Redis"))
-  
+  redisClient.on("connect", () => console.log("Connected to Redis"));
 
   app.use(
     session({
@@ -72,7 +69,13 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UsersResolver, DiscordUsersResolver, SettingsResolver, DiscordResolver],
+      resolvers: [
+        UsersResolver,
+        DiscordUsersResolver,
+        SettingsResolver,
+        DiscordResolver,
+        ActivityResolver,
+      ],
       validate: false,
     }),
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground()],
@@ -115,47 +118,24 @@ const main = async () => {
     });
     if (me.status !== 200) return res.redirect(process.env.CORS_ORIGIN);
     const userData = me.data as Users;
-    const guilds = await axios({
-      url: "https://discord.com/api/users/@me/guilds",
-      headers: {
-        authorization: `${token.token_type} ${token.access_token}`,
-      },
-    });
-    if (guilds.status !== 200) return res.redirect(process.env.CORS_ORIGIN);
-    const userGuilds = guilds.data as DiscordGuilds[];
-    const filteredGuilds = userGuilds.filter(
-      (guild) => (parseInt(guild.permissions, 10) & 0x8) === 0x8
-    );
-
-    if (filteredGuilds.length > 0) {
-      const botGuilds = await orm.em.fork().find(Settings, {});
-      if (botGuilds.length > 0) {
-        filteredGuilds.forEach((guild) => {
-          const isIn = botGuilds.find((x) => x.guildId === guild.id);
-          if (isIn) {
-            guild.in = true;
-          }
-        });
-      }
-    }
-
-    userData.guilds = filteredGuilds;
-
-    let user = await orm.em.fork().findOne(Users, { id: userData.id });
     
-    let userTokens = await orm.em.fork().findOne(Tokens, { id: userData.id });
+    const filteredGuilds = await getGuilds(orm.em.fork(), userData.userId);
+    userData.guilds = filteredGuilds ?? [];
+
+    let user = await orm.em.fork().findOne(Users, { userId: userData.id.toString() });
+
+    let userTokens = await orm.em.fork().findOne(Tokens, { userId: userData.id.toString() });
 
     const curr = new Date();
-    
-    
+
     curr.setSeconds(curr.getSeconds() + parseInt(token.expires_in.toString()));
 
     if (!user) {
-      user = orm.em.fork().create(Users, userData);
+      user = orm.em.fork().create(Users, {...userData, id: undefined, userId: userData.id.toString()});
 
       await orm.em.fork().persistAndFlush(user);
     } else {
-      wrap(user).assign(userData);
+      wrap(user).assign({...userData, id: undefined, userId: userData.id.toString()});
 
       await orm.em.fork().persistAndFlush(user);
     }
@@ -164,7 +144,7 @@ const main = async () => {
       userTokens = orm.em.fork().create(Tokens, {
         ...token,
         expires_in: curr,
-        id: userData.id,
+        userId: userData.id.toString(),
       });
 
       await orm.em.fork().persistAndFlush(userTokens);
@@ -173,7 +153,7 @@ const main = async () => {
 
       await orm.em.fork().persistAndFlush(userTokens);
     }
-    req.session.userId = user?.id;
+    req.session.userId = user?.userId;
 
     res.redirect(process.env.CORS_ORIGIN + "/dashboard");
   });

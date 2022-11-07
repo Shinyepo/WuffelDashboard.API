@@ -4,7 +4,7 @@ import { Tokens } from "../entities/Tokens";
 import config from "../config";
 
 export const getToken = async (em: EntityManager, userId: string) => {
-  const userData = await em.findOne(Tokens, { id: "190561911492968448" });
+  const userData = await em.findOne(Tokens, { userId });
   if (!userData) return null;
   if (userData.expires_in < new Date()) {
     const apiResult = await axios({
@@ -25,11 +25,17 @@ export const getToken = async (em: EntityManager, userId: string) => {
       return null;
     }
     const response = apiResult.data as Tokens;
-    const updatedUserData = await updateToken(em, userId, response);
+    const updatedUserData = await updateToken(em.fork(), userId, response);
 
-    return updatedUserData?.access_token;
+    return {
+      token: updatedUserData?.access_token,
+      token_type: updatedUserData?.token_type
+    };
   }
-  return userData.access_token;
+  return {
+    token: userData.access_token,
+    token_type: userData.token_type
+  }
 };
 
 export const updateToken = async (
@@ -37,15 +43,15 @@ export const updateToken = async (
   userId: String,
   response: Tokens
 ) => {
-  const userData = await em.findOne(Tokens, { id: userId });
+  const userData = await em.findOne(Tokens, { userId });
   if (!userData) {
-    await insertNewToken(em, userId, response);
+    await insertNewToken(em.fork(), userId, response);
     return null;
   }
   userData.access_token = response.access_token;
   userData.expires_in = new Date(response.expires_in);
   userData.refresh_token = response.refresh_token;
-  await em.flush();
+  await em.persistAndFlush(userData);
   return userData;
 };
 
@@ -56,7 +62,7 @@ export const insertNewToken = async (
 ) => {
   const newEntry = await em.create(Tokens, {
     ...response,
-    id: userId,
+    userId,
   });
 
   await em.persistAndFlush(newEntry);

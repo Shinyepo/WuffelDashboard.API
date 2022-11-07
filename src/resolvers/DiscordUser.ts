@@ -12,13 +12,15 @@ import { Settings } from "../entities/bot/Settings";
 import { StreamLeaderboard } from "../entities/bot/StreamLeaderboard";
 import { isAuth } from "../middleware/isAuth";
 import { omitTypename } from "../middleware/omitFields";
+import { logActivity } from "../services/ActivityService";
+import { getGuilds } from "../services/GuildService";
 
 @Resolver()
 export class DiscordUsersResolver {
   @Query(() => Users, { nullable: true })
   async me(@Ctx() { em, req, res }: MyContext): Promise<Users | null> {
     if (!req.session.userId) return null;
-    const user = await em.findOne(Users, { id: req.session.userId });
+    const user = await em.findOne(Users, { userId: req.session.userId });
 
     if (!user) {
       console.log("no user");
@@ -41,16 +43,19 @@ export class DiscordUsersResolver {
   @UseMiddleware(omitTypename)
   async guilds(@Ctx() { em, req }: MyContext): Promise<DiscordGuilds[] | null> {
     if (!req.session.userId) return null;
-    const qb = em.createQueryBuilder(Users);
-
-    const result = (await qb
-      .select("guilds")
-      .where({ id: req.session.userId })
-      .execute("get")) as Users;
+    const result = await em.findOne(Users, {
+      userId: req.session.userId,
+    });
     if (!result) return null;
-    const guilds = result.guilds as DiscordGuilds[];
+    const newGuilds = await getGuilds(em.fork(), req.session.userId);
 
-    return guilds;
+    if (result.guilds !== newGuilds && newGuilds) {
+      result.guilds = newGuilds;
+      await em.persistAndFlush(result);
+      return result.guilds;
+    }
+
+    return result.guilds;
   }
 
   @Mutation(() => Boolean)
@@ -85,7 +90,7 @@ export class DiscordUsersResolver {
       return null;
     }
     const isUserTellingThruth = await em.findOne(Users, {
-      id: req.session.userId,
+      userId: req.session.userId,
     });
     if (isUserTellingThruth) {
       const usersGuild = isUserTellingThruth.guilds.find(
@@ -106,7 +111,7 @@ export class DiscordUsersResolver {
   ): Promise<StreamLeaderboard[] | null> {
     if (!req.session.userId) return null;
     const isUserTellingThruth = await em.findOne(Users, {
-      id: req.session.userId,
+      userId: req.session.userId,
     });
     if (isUserTellingThruth) {
       const usersGuild = isUserTellingThruth.guilds.find(
@@ -129,13 +134,19 @@ export class DiscordUsersResolver {
   @UseMiddleware(isAuth)
   async removeRanking(
     @Ctx() { em, req }: MyContext,
-    @Arg("id") id: string
+    @Arg("id") id: string,
+    @Arg("guildId") guildId: string
   ): Promise<rrResponse> {
-    if (!req.session.userId) return {success: false, id};
+    if (!req.session.userId) return { success: false, id };
     const ranking = await em.findOne(StreamLeaderboard, { id: parseInt(id) });
-    if (!ranking) return {success: false, id};
+    if (!ranking) return { success: false, id };
     await em.removeAndFlush(ranking);
-
-    return {success: true, id};
+    await logActivity(em, {
+      activity: "streamerRanking.removeRanking",
+      userId: req.session.userId,
+      guildId,
+      activityType: false,
+    });
+    return { success: true, id };
   }
 }
