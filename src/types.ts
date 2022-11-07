@@ -15,40 +15,37 @@ declare module "express-session" {
 }
 
 @ObjectType()
-export class DiscordChannelSelectList  {
+export class DiscordChannelSelectList {
   @Field()
   id: string;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   type?: number;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   name?: string;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   position?: number;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   parent_id?: string;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   guild_id?: string;
-  @Field(() => [DiscordChannelSelectList], {nullable: true})
-  channels?: DiscordChannelSelectList[]
+  @Field(() => [DiscordChannelSelectList], { nullable: true })
+  channels?: DiscordChannelSelectList[];
 }
 export type DiscordChannel = {
-  [key: string]: any,
-  id: string,
-  last_message_id?: string,
-  type: number,
-  name: string,
-  position: number,
-  parent_id?: string,
-  topic?: string,
-  guild_id: string,
-  permission_overwrites?: string[],
-  nsfw: boolean,
-  rate_limit_per_user: number,
-  banner?: string,
-
-
-}
-
+  [key: string]: any;
+  id: string;
+  last_message_id?: string;
+  type: number;
+  name: string;
+  position: number;
+  parent_id?: string;
+  topic?: string;
+  guild_id: string;
+  permission_overwrites?: string[];
+  nsfw: boolean;
+  rate_limit_per_user: number;
+  banner?: string;
+};
 
 export type DiscordTokenResponse = {
   access_token: string;
@@ -126,48 +123,63 @@ export class DiscordUser {
   @Field(() => [DiscordGuilds])
   guilds: DiscordGuilds[];
 }
-@ObjectType()
-@InputType()
+@ObjectType("IgnoredLogObject")
+@InputType("IgnoredLogObjectInput")
 export class IgnoredLogObject {
-  @Field(() => [String], {nullable: true})
+  @Field(() => [String], { nullable: true })
   users?: String[];
-  @Field(() => [String], {nullable: true})
+  @Field(() => [String], { nullable: true })
   channels?: String[];
 }
 
-@ObjectType()
-@InputType()
+@ObjectType("LogObject")
+@InputType("LogObjectInput")
 export class LogObject {
   @Field()
-  id: string;
+  id: number;
   @Field()
   name: string;
   @Field()
   on: Boolean;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   channel?: string;
-  @Field(() => IgnoredLogObject, {nullable: true})
+  @Field(() => IgnoredLogObject, { nullable: true })
   ignored?: IgnoredLogObject;
 }
 
 @ObjectType()
 export class rrResponse {
   @Field()
-  success: Boolean
+  success: Boolean;
 
   @Field()
-  id: string
+  id: string;
 }
-
 
 @InputType()
 export class settingsArgumentType {
   @Field()
-  id: string;
+  id: number;
   @Field()
   name: string;
   @Field()
   on: Boolean;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   channel?: string;
+  @Field(() => IgnoredLogObject, { nullable: true })
+  ignored?: IgnoredLogObject;
+}
+
+@ObjectType()
+export class LogActivity {
+  @Field()
+  guildId: string;
+  @Field()
+  userId: string;
+  @Field()
+  activity: string;
+  @Field()
+  activityType: boolean;
+  @Field(() => Date)
+  createdAt?: Date;
 }
