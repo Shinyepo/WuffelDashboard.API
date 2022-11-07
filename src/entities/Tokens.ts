@@ -6,7 +6,11 @@ import { Field, ObjectType } from "type-graphql";
 export class Tokens {
   @Field()
   @PrimaryKey()
-  id: String;
+  id: number;
+
+  @Field()
+  @Property()
+  userId: String;
 
   @Field()
   @Property()

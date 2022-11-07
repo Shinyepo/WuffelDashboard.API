@@ -8,19 +8,23 @@ export class Users {
   [key: string]: String | number | boolean | null | undefined | DiscordGuilds[] | Date;
   @Field()
   @PrimaryKey()
-  id: String;
+  id: number;
 
   @Field()
   @Property()
-  username: String;
+  userId: string;
+  
+  @Field()
+  @Property()
+  username: string;
 
   @Field()
   @Property()
-  avatar: String;
+  avatar: string;
 
   @Field()
   @Property()
-  discriminator: String;
+  discriminator: string;
   
   @Field()
   @Property()
@@ -32,7 +36,7 @@ export class Users {
 
   @Field()
   @Property({nullable: true})
-  banner: String;
+  banner: string;
 
   @Field()
   @Property({nullable: true})
@@ -44,7 +48,7 @@ export class Users {
 
   @Field()
   @Property({nullable: true})
-  locale: String;
+  locale: string;
 
   @Field()
   @Property({nullable: true})
@@ -56,7 +60,7 @@ export class Users {
 
   @Field()
   @Property()
-  email?: String;
+  email?: string;
 
   @Field()
   @Property()

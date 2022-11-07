@@ -13,7 +13,7 @@ export const isAuth: MiddlewareFn<MyContext> = async (
   }
   if (args.guildId) {
     const isUserTellingThruth = await context.em.fork().findOne(Users, {
-      id: context.req.session.userId,
+      userId: context.req.session.userId,
     });
     if (isUserTellingThruth) {
       const usersGuild = isUserTellingThruth.guilds.find(
