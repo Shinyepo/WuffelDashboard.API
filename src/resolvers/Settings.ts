@@ -27,7 +27,15 @@ export class SettingsResolver {
     @Arg("guildId") guildId: string
   ): Promise<LogSettings | null> {
     const data = await em.findOne(LogSettings, { guildId });
-    return data ?? null;
+    if (!data) {
+      const newEntry = em.create(LogSettings, {
+        guildId
+      });
+
+      await em.persistAndFlush(newEntry);
+      return Promise.resolve(newEntry);
+    }
+    return Promise.resolve(data);
   }
 
   @Mutation(() => Boolean)
@@ -73,7 +81,7 @@ export class SettingsResolver {
   ): Promise<Boolean> {
     const logSettings = await em.fork().findOne(LogSettings, { guildId });
 
-    if (!logSettings) return Promise.reject(false);
+    if (!logSettings) return Promise.reject("Setting is already set with that value.");
 
     const eventSettings = logSettings.settings;
     const foundSetting = eventSettings?.find((x) => x.name === event);
