@@ -173,6 +173,8 @@ export class settingsArgumentType {
 @ObjectType()
 export class LogActivity {
   @Field()
+  id?: number;
+  @Field()
   guildId: string;
   @Field()
   userId: string;
