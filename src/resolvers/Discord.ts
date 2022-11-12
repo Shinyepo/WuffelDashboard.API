@@ -2,6 +2,8 @@ import {
   DiscordChannel,
   DiscordChannelSelectList,
   DiscordGuilds,
+  DiscordMembersAPIResult,
+  GetDiscordMembersResult,
   MyContext,
 } from "../types";
 import {
@@ -102,6 +104,50 @@ export class DiscordResolver {
     } catch (error) {
       console.error(error);
       return new Array<DiscordChannelSelectList>();
+    }
+  }
+
+  @Query(() => [GetDiscordMembersResult], { nullable: true })
+  @UseMiddleware(isAuth)
+  async getGuildMembers(
+    @Ctx() {}: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<GetDiscordMembersResult[]> {
+    // const token = await getToken(em,req.session.userId);
+    try {
+      const apiResult = await axios({
+        url:
+          "https://discord.com/api/v10/guilds/" +
+          guildId +
+          "/members?limit=1000",
+        method: "GET",
+        headers: {
+          authorization: `Bot ${config.botToken}`,
+        },
+      });
+      console.log(apiResult.data);
+      
+
+      if (!apiResult) return Promise.reject(false);
+      if (apiResult.status !== 200) {
+        return Promise.reject(false);
+      }
+      if (!apiResult.data) return Promise.reject(false);
+      const members = apiResult.data as DiscordMembersAPIResult[];
+      const response = new Array<GetDiscordMembersResult>();
+      members.map((x) => {
+        if (x.user.bot) return;
+        return response.push({
+          id: x.user.id,
+          discriminator: x.user.discriminator,
+          username: x.user.username,
+          nick: x.nick,
+        });
+      });
+      return Promise.resolve(response);
+    } catch (e) {
+      console.error(e);
+      return Promise.reject(false);
     }
   }
 

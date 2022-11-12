@@ -250,3 +250,61 @@ export const DefaultSettings = [
     },
   },
 ] as Array<LogObject>;
+
+@ObjectType()
+export class SimpleDiscordUser {
+  @Field()
+  id: string;
+  @Field()
+  username: string;
+  @Field({ nullable: true })
+  avatar?: string;
+  @Field({ nullable: true })
+  avatar_decoration?: string;
+  @Field()
+  discriminator: string;
+  @Field()
+  public_flags: number;
+  @Field({nullable: true})
+  bot?: boolean;
+}
+
+@ObjectType()
+export class DiscordMembersAPIResult {
+  @Field()
+  user: SimpleDiscordUser;
+  @Field({ nullable: true })
+  nick?: string;
+  @Field({ nullable: true })
+  avatar?: string;
+  @Field(() => [String])
+  roles: string[];
+  @Field()
+  joined_at: Date;
+  @Field({ nullable: true })
+  premium_since?: Date;
+  @Field()
+  deaf: boolean;
+  @Field()
+  mute: boolean;
+  @Field({ nullable: true })
+  pending?: boolean;
+  @Field({ nullable: true })
+  permissions?: string;
+  @Field()
+  communication_disabled_until?: Date;
+  @Field()
+  flags: number;
+}
+
+@ObjectType()
+export class GetDiscordMembersResult {
+  @Field()
+  id: string;
+  @Field({nullable: true})
+  nick?: string;
+  @Field()
+  username: string;
+  @Field()
+  discriminator: string;
+}
