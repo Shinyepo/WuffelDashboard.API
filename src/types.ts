@@ -187,3 +187,66 @@ export class LogActivity {
   @Field(() => Date)
   createdAt?: Date;
 }
+
+export const DefaultSettings = [
+  {
+    id: 0,
+    on: false,
+    name: "messageEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+  {
+    id: 1,
+    on: false,
+    name: "channelEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+  {
+    id: 2,
+    on: false,
+    name: "userEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+  {
+    id: 3,
+    on: false,
+    name: "voicePresenceEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+  {
+    id: 4,
+    on: false,
+    name: "guildEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+  {
+    id: 5,
+    on: false,
+    name: "emojiEvents",
+    channel: "",
+    ignored: {
+      channels: [],
+      users: [],
+    },
+  },
+] as Array<LogObject>;

@@ -1,5 +1,6 @@
 import { isAuth } from "../middleware/isAuth";
 import {
+  DefaultSettings,
   IgnoredLogObject,
   LogObject,
   MyContext,
@@ -29,7 +30,8 @@ export class SettingsResolver {
     const data = await em.findOne(LogSettings, { guildId });
     if (!data) {
       const newEntry = em.create(LogSettings, {
-        guildId
+        guildId,
+        settings: DefaultSettings
       });
 
       await em.persistAndFlush(newEntry);
