@@ -23,7 +23,6 @@ export class DiscordUsersResolver {
     const user = await em.findOne(Users, { userId: req.session.userId });
 
     if (!user) {
-      console.log("no user");
       await new Promise((resolver) =>
         req.session.destroy((err) => {
           if (err) {
@@ -92,7 +91,6 @@ export class DiscordUsersResolver {
     
     if (guildId === "1") {
       const guildSettings = await em.findOne(Settings, { guildId });
-      console.log("im here");
       return guildSettings;
     }
     const isUserTellingThruth = await em.findOne(Users, {

@@ -52,7 +52,7 @@ export class Settings {
   @Property({ nullable: true })
   cleanup: Boolean;
 
-  @Field(() => String, {nullable: true})
-  @Property({nullable: true})
+  @Field(() => [String], {nullable: true})
+  @Property({nullable: true, type: "array"})
   moderators: string[];
 }

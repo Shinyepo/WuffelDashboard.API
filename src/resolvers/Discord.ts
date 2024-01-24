@@ -213,29 +213,33 @@ export class DiscordResolver {
     @Arg("guildId") guildId: string,
     @Arg("userId") userId: string
   ): Promise<Boolean> {
-    const data = await em.fork().findOne(GuildPrivilege, {
-      guildId,
-    });
-    if (!data || !data.userIds) return Promise.reject("No data");
-
-    const found = data.userIds.find((x) => x.userId === userId);
-
-    if (!found) return Promise.resolve(true);
-
-    const idx = data.userIds.indexOf(found);
-    data.userIds.splice(idx, 1);
-    await em.persistAndFlush(data);
+    const settings = await em.findOne(Settings, { guildId });
+    if (!settings) return Promise.reject("Something went wrong :(");
+    const idx = settings.moderators.indexOf(userId);
+    console.log({idx, guildId, userId});
+    
+    if (!!idx) return Promise.reject("Already set.");
+    settings.moderators.splice(idx, 1);
+    console.log(settings);
+    
+    await em.persistAndFlush(settings);
     return Promise.resolve(true);
   }
 
-  @Mutation(() => PrivilegedMembers)
+  @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async grantGuildPrivilege(
     @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string,
-    @Arg("user") user: PrivilegedUser
-  ): Promise<PrivilegedMembers> {
-    return Promise.reject();
+    @Arg("userId") userId: string
+  ): Promise<boolean> {
+    const settings = await em.findOne(Settings, { guildId });
+    if (!settings) return Promise.reject("Something went wrong :(");
+    const alreadySet = settings.moderators.some((x) => x === userId);
+    if (alreadySet) return Promise.reject("Already set.");
+    settings.moderators.push(userId);
+    await em.persistAndFlush(settings);
+    return Promise.resolve(true);
   }
 
   @Mutation(() => Boolean)

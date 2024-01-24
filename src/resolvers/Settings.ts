@@ -17,6 +17,7 @@ import {
 import { LogSettings } from "../entities/bot/LogSettings";
 import { omitTypename } from "../middleware/omitFields";
 import { logActivity } from "../services/ActivityService";
+import { Settings } from "../entities/bot/Settings";
 
 @Resolver()
 export class SettingsResolver {
@@ -42,6 +43,19 @@ export class SettingsResolver {
       return Promise.resolve(newEntry);
     }
     return Promise.resolve(data);
+  }
+
+  @Query(() => [String])
+  @UseMiddleware(isAuth)
+  @UseMiddleware(omitTypename)
+  async getModerators(
+    @Ctx() { em }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<string[]> {
+    const settings = await em.findOne(Settings, { guildId });
+    if (!settings) return [];
+    
+    return settings.moderators;
   }
 
   @Mutation(() => Boolean)

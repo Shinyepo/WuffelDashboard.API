@@ -17,7 +17,6 @@ import { DiscordResolver } from "./resolvers/Discord";
 import { ActivityResolver } from "./resolvers/Activity";
 import { getGuilds } from "./services/GuildService";
 import session from "express-session";
-import { Migrator } from "@mikro-orm/migrations";
 import { buildSchemaSync } from "type-graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
