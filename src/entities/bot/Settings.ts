@@ -51,4 +51,8 @@ export class Settings {
   @Field({ nullable: true })
   @Property({ nullable: true })
   cleanup: Boolean;
+
+  @Field(() => String, {nullable: true})
+  @Property({nullable: true})
+  moderators: string[];
 }

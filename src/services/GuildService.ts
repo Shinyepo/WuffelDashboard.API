@@ -30,7 +30,13 @@ export const getGuilds = async (em: EntityManager, userId: string) => {
         const isIn = botGuilds.find((x) => x.guildId === guild.id);
         if (isIn) {
           guild.in = true;
+        } else {
+          guild.in = false;
         }
+      });
+    } else {
+      filteredGuilds.forEach((guild) => {
+        guild.in = false;
       });
     }
     return filteredGuilds;

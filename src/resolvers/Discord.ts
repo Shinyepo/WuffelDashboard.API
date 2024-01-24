@@ -5,6 +5,8 @@ import {
   DiscordMembersAPIResult,
   GetDiscordMembersResult,
   MyContext,
+  PrivilegedMembers,
+  PrivilegedUser,
 } from "../types";
 import {
   Arg,
@@ -22,6 +24,8 @@ import { omitTypename } from "../middleware/omitFields";
 import { Users } from "../entities/Users";
 import { Settings } from "../entities/bot/Settings";
 import { logActivity } from "../services/ActivityService";
+import { GuildPrivilege } from "../entities/GuildPrivilege";
+import { mockChannels, mockMembers } from "../constants";
 @Resolver()
 export class DiscordResolver {
   @Query(() => [DiscordChannelSelectList], { nullable: true })
@@ -31,6 +35,7 @@ export class DiscordResolver {
     @Arg("guildId") guildId: string
   ): Promise<DiscordChannelSelectList[]> {
     // const token = await getToken(em,req.session.userId);
+    if (guildId === "1") return mockChannels;
     try {
       const apiResult = await axios({
         url: "https://discord.com/api/v9/guilds/" + guildId + "/channels",
@@ -113,6 +118,9 @@ export class DiscordResolver {
     @Ctx() {}: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<GetDiscordMembersResult[]> {
+    if (guildId === "1") {
+      return Promise.resolve(mockMembers);
+    }
     // const token = await getToken(em,req.session.userId);
     try {
       const apiResult = await axios({
@@ -125,8 +133,6 @@ export class DiscordResolver {
           authorization: `Bot ${config.botToken}`,
         },
       });
-      console.log(apiResult.data);
-      
 
       if (!apiResult) return Promise.reject(false);
       if (apiResult.status !== 200) {
@@ -135,6 +141,7 @@ export class DiscordResolver {
       if (!apiResult.data) return Promise.reject(false);
       const members = apiResult.data as DiscordMembersAPIResult[];
       const response = new Array<GetDiscordMembersResult>();
+
       members.map((x) => {
         if (x.user.bot) return;
         return response.push({
@@ -158,6 +165,7 @@ export class DiscordResolver {
     @Arg("guildId") guildId: string
   ): Promise<GuildTraffic[] | null> {
     if (!req.session.userId) return null;
+    if (guildId === "1") return [];
     const context = em.fork();
     const qb = context.createQueryBuilder(Users);
 
@@ -179,6 +187,55 @@ export class DiscordResolver {
     });
 
     return traffic;
+  }
+  @Query(() => PrivilegedMembers)
+  @UseMiddleware(isAuth)
+  async getPrivilegedMembers(
+    @Ctx() { em }: MyContext,
+    @Arg("guildId") guildId: string
+  ): Promise<PrivilegedMembers> {
+    const data = await em.fork().findOne(GuildPrivilege, { guildId });
+
+    if (!data) return Promise.reject("Missing data.");
+
+    const res = {
+      guildId: data.guildId,
+      users: data.userIds,
+    } as PrivilegedMembers;
+
+    return Promise.resolve(res);
+  }
+
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async revokeGuildPrivilege(
+    @Ctx() { em }: MyContext,
+    @Arg("guildId") guildId: string,
+    @Arg("userId") userId: string
+  ): Promise<Boolean> {
+    const data = await em.fork().findOne(GuildPrivilege, {
+      guildId,
+    });
+    if (!data || !data.userIds) return Promise.reject("No data");
+
+    const found = data.userIds.find((x) => x.userId === userId);
+
+    if (!found) return Promise.resolve(true);
+
+    const idx = data.userIds.indexOf(found);
+    data.userIds.splice(idx, 1);
+    await em.persistAndFlush(data);
+    return Promise.resolve(true);
+  }
+
+  @Mutation(() => PrivilegedMembers)
+  @UseMiddleware(isAuth)
+  async grantGuildPrivilege(
+    @Ctx() { em }: MyContext,
+    @Arg("guildId") guildId: string,
+    @Arg("user") user: PrivilegedUser
+  ): Promise<PrivilegedMembers> {
+    return Promise.reject();
   }
 
   @Mutation(() => Boolean)

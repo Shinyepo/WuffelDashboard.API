@@ -265,7 +265,7 @@ export class SimpleDiscordUser {
   discriminator: string;
   @Field()
   public_flags: number;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   bot?: boolean;
 }
 
@@ -301,10 +301,33 @@ export class DiscordMembersAPIResult {
 export class GetDiscordMembersResult {
   @Field()
   id: string;
-  @Field({nullable: true})
+  @Field({ nullable: true })
   nick?: string;
   @Field()
   username: string;
   @Field()
   discriminator: string;
+  @Field({ nullable: true })
+  permissions?: string;
+}
+
+@ObjectType()
+export class PrivilegedMembers {
+  @Field()
+  guildId: string;
+  @Field(() => [PrivilegedUser])
+  users: PrivilegedUser[];
+}
+
+@ObjectType()
+@InputType("PrivilegedUserArg")
+export class PrivilegedUser {
+  @Field()
+  username: string;
+
+  @Field()
+  userId: string;
+
+  @Field({ nullable: true })
+  nick?: string;
 }

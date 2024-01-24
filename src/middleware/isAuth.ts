@@ -9,13 +9,13 @@ export const isAuth: MiddlewareFn<MyContext> = async (
   if (!context.req.session.userId) {
     context.res.redirect("/");
     throw new Error("not authenticated");
-    // throw new Error("")
   }
   if (args.guildId) {
     const isUserTellingThruth = await context.em.fork().findOne(Users, {
       userId: context.req.session.userId,
     });
     if (isUserTellingThruth) {
+      if (args.guildId === "1") return next();
       const usersGuild = isUserTellingThruth.guilds.find(
         (x) => x.id === args.guildId
       );

@@ -27,11 +27,15 @@ export class SettingsResolver {
     @Ctx() { em }: MyContext,
     @Arg("guildId") guildId: string
   ): Promise<LogSettings | null> {
+    if (guildId === "1") {
+      const data = await em.findOne(LogSettings, { guildId });
+      return data;
+    }
     const data = await em.findOne(LogSettings, { guildId });
     if (!data) {
       const newEntry = em.create(LogSettings, {
         guildId,
-        settings: DefaultSettings
+        settings: DefaultSettings,
       });
 
       await em.persistAndFlush(newEntry);
@@ -61,7 +65,7 @@ export class SettingsResolver {
     if (!logSettings) {
       const newEntry = await em.create(LogSettings, {
         guildId,
-        settings
+        settings,
       });
       await em.persistAndFlush(newEntry);
       return Promise.resolve(true);
@@ -83,7 +87,8 @@ export class SettingsResolver {
   ): Promise<Boolean> {
     const logSettings = await em.fork().findOne(LogSettings, { guildId });
 
-    if (!logSettings) return Promise.reject("Setting is already set with that value.");
+    if (!logSettings)
+      return Promise.reject("Setting is already set with that value.");
 
     const eventSettings = logSettings.settings;
     const foundSetting = eventSettings?.find((x) => x.name === event);

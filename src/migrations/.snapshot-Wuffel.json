@@ -63,13 +63,12 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "activity",
@@ -81,12 +80,62 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "unsigned": true,
+          "autoincrement": true,
+          "primary": true,
+          "nullable": false,
+          "mappedType": "integer"
+        },
+        "user_ids": {
+          "name": "user_ids",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "guild_id": {
+          "name": "guild_id",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "string"
+        }
+      },
+      "name": "guildprivilege",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "guildprivilege_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -146,13 +195,12 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "guildtraffic",
@@ -164,12 +212,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -202,23 +252,21 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "logsettings",
@@ -230,12 +278,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -346,6 +396,15 @@
           "primary": false,
           "nullable": true,
           "mappedType": "boolean"
+        },
+        "moderators": {
+          "name": "moderators",
+          "type": "text[]",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "array"
         }
       },
       "name": "settings",
@@ -357,12 +416,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -422,23 +483,21 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "streamleaderboard",
@@ -450,12 +509,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -488,13 +549,12 @@
         },
         "starting_date": {
           "name": "starting_date",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "streamwatch",
@@ -506,12 +566,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -562,13 +624,12 @@
         },
         "expires_in": {
           "name": "expires_in",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         },
         "scope": {
           "name": "scope",
@@ -581,23 +642,21 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "tokens",
@@ -609,12 +668,14 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     },
     {
       "columns": {
@@ -764,23 +825,21 @@
         },
         "created_at": {
           "name": "created_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         },
         "updated_at": {
           "name": "updated_at",
-          "type": "timestamptz(0)",
+          "type": "date",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "length": 6,
-          "mappedType": "datetime"
+          "mappedType": "date"
         }
       },
       "name": "users",
@@ -792,12 +851,15 @@
             "id"
           ],
           "composite": false,
+          "constraint": true,
           "primary": true,
           "unique": true
         }
       ],
       "checks": [],
-      "foreignKeys": {}
+      "foreignKeys": {},
+      "nativeEnums": {}
     }
-  ]
+  ],
+  "nativeEnums": {}
 }

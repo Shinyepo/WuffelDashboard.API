@@ -89,6 +89,12 @@ export class DiscordUsersResolver {
     if (!req.session.userId) {
       return null;
     }
+    
+    if (guildId === "1") {
+      const guildSettings = await em.findOne(Settings, { guildId });
+      console.log("im here");
+      return guildSettings;
+    }
     const isUserTellingThruth = await em.findOne(Users, {
       userId: req.session.userId,
     });
