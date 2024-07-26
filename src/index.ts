@@ -20,7 +20,7 @@ import session from "express-session";
 import { buildSchemaSync } from "type-graphql";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@apollo/server/express4";
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginLandingPageProductionDefault } from '@apollo/server/plugin/landingPage/default';
 import cors from "cors";
 import express from "express";
 import { MyContext } from "./types";
@@ -41,6 +41,8 @@ const main = async () => {
   });
   redisClient.connect().catch(console.error);
 
+  app.set("trust proxy", 1);
+
   redisClient.on("error", (err) => console.log(err));
   redisClient.on("connect", () => console.log("Connected to Redis"));
 
@@ -56,9 +58,9 @@ const main = async () => {
       cookie: {
         maxAge: 1000 * 60 * 24 * 365 * 10,
         httpOnly: true,
-        secure: false, // https
+        secure: true, // https
         sameSite: "lax",
-        // domain: __prod__ ? "178.43.12.39" : undefined,
+        domain: ".shinyepo.dev"
       },
       saveUninitialized: false,
       secret: process.env.SECRET,
@@ -80,7 +82,9 @@ const main = async () => {
     schema: schema,
     // includeStacktraceInErrorResponses: true,
     introspection: true,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [ApolloServerPluginLandingPageProductionDefault({
+      footer: false,
+    })]
   });
 
   await apolloServer.start();
@@ -114,7 +118,7 @@ const main = async () => {
         client_secret: config.clientSecret,
         code: code!.toString(),
         grant_type: "authorization_code",
-        redirect_uri: `http://localhost:4000/discord/auth/callback`,
+        redirect_uri: `https://wuffelapi.shinyepo.dev/discord/auth/callback`,
         scope: "identify",
       }),
       {

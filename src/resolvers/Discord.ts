@@ -6,7 +6,6 @@ import {
   GetDiscordMembersResult,
   MyContext,
   PrivilegedMembers,
-  PrivilegedUser,
 } from "../types";
 import {
   Arg,
