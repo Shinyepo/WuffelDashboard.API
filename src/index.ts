@@ -1,6 +1,5 @@
 import http from "http";
 import "reflect-metadata";
-import "dotenv-safe/config";
 import { MikroORM, wrap } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import mikroOrmConfig from "./mikro-orm.config";
@@ -8,7 +7,6 @@ import { UsersResolver } from "./resolvers/Users";
 import { createClient } from "redis";
 import rStore from "connect-redis";
 import axios from "axios";
-import config from "./config";
 import { Users } from "./entities/Users";
 import { Tokens } from "./entities/Tokens";
 import { DiscordUsersResolver } from "./resolvers/DiscordUser";
@@ -31,7 +29,7 @@ const main = async () => {
 
   const app = express();
   const httpServer = http.createServer(app);
-  // app.set("trust proxy", 1);
+  app.set("trust proxy", 1);
   // app.use(
 
   // );
@@ -41,7 +39,7 @@ const main = async () => {
   });
   redisClient.connect().catch(console.error);
 
-  app.set("trust proxy", 1);
+  // app.set("trust proxy", 1);
 
   redisClient.on("error", (err) => console.log(err));
   redisClient.on("connect", () => console.log("Connected to Redis"));
@@ -88,6 +86,7 @@ const main = async () => {
   });
 
   await apolloServer.start();
+  console.log("Cors origin: " + process.env.CORS_ORIGIN);
 
   app.use(
     "/graphql",
@@ -114,8 +113,8 @@ const main = async () => {
     const oauthResult = await axios.post(
       "https://discord.com/api/v10/oauth2/token",
       new URLSearchParams({
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
+        client_id: process.env.CLIENT_ID!,
+        client_secret: process.env.CLIENT_SECRET!,
         code: code!.toString(),
         grant_type: "authorization_code",
         redirect_uri: `https://wuffelapi.shinyepo.dev/discord/auth/callback`,
@@ -196,7 +195,7 @@ const main = async () => {
     httpServer.listen({ port: 4000 }, resolve)
   );
 
-  console.log(`🚀 Server ready at http://localhost:4000/`);
+  console.log(`🚀 Server ready at https://wuffelapi.shinyepo.dev`);
 };
 
 main();

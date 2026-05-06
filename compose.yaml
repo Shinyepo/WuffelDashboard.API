@@ -1,0 +1,15 @@
+services:
+  api:
+    platform: linux/arm64/v8
+    image: wuffel-api:latest
+    build:
+      context: .
+    environment:
+      NODE_ENV:
+      DATABASE_URL:
+      REDIS_URL:
+      CORS_ORIGIN:
+      BOT_TOKEN:
+      CLIENT_ID:
+      CLIENT_SECRET:
+      SECRET:

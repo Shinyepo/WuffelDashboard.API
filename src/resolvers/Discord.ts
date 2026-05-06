@@ -16,7 +16,6 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import axios from "axios";
-import config from "../config";
 import { isAuth } from "../middleware/isAuth";
 import { GuildTraffic } from "../entities/bot/GuildTraffic";
 import { omitTypename } from "../middleware/omitFields";
@@ -40,7 +39,7 @@ export class DiscordResolver {
         url: "https://discord.com/api/v9/guilds/" + guildId + "/channels",
         method: "GET",
         headers: {
-          authorization: `Bot ${config.botToken}`,
+          authorization: `Bot ${process.env.BOT_TOKEN}`,
         },
       });
 
@@ -129,7 +128,7 @@ export class DiscordResolver {
           "/members?limit=1000",
         method: "GET",
         headers: {
-          authorization: `Bot ${config.botToken}`,
+          authorization: `Bot ${process.env.BOT_TOKEN}`,
         },
       });
 

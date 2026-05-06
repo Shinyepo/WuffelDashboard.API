@@ -29,7 +29,9 @@ export const getGuilds = async (em: EntityManager, userId: string) => {
       filteredGuilds.forEach((guild) => {
         const isIn = botGuilds.find((x) => x.guildId === guild.id);
         if (isIn) {
-          guild.in = true;
+          if (isIn.active) {
+            guild.in = true;
+          }
         } else {
           guild.in = false;
         }

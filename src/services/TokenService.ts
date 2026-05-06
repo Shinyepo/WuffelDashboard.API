@@ -1,7 +1,6 @@
 import { EntityManager } from "@mikro-orm/knex";
 import axios from "axios";
 import { Tokens } from "../entities/Tokens";
-import config from "../config";
 
 export const getToken = async (em: EntityManager, userId: string) => {
   const userData = await em.findOne(Tokens, { userId });
@@ -11,11 +10,11 @@ export const getToken = async (em: EntityManager, userId: string) => {
       url: "https://discord.com/api/v8/oauth2/token",
       method: "POST",
       data: new URLSearchParams({
-        'client_id': config.clientId,
-        'client_secret': config.clientSecret,
+        'client_id': process.env.CLIENT_ID!,
+        'client_secret': process.env.CLIENT_SECRET!,
         'grant_type': 'refresh_token',
         'refresh_token': userData.refresh_token,
-        redirect_uri: `http://localhost:4000/discord/auth/callback`
+        redirect_uri: `https://wuffelapi.shinyepo.dev/discord/auth/callback`
       }),
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
